@@ -6,8 +6,10 @@ namespace fs_2025_a_api_demo_002.Startup
     {
         public static void AddDependencies(this WebApplicationBuilder builder)
         {
-            builder.Services.AddTransient<CourseData>();
-            builder.Services.AddMemoryCache();
+            // Use singletons for data loaders
+            builder.Services.AddSingleton<CourseData>();
+
+            builder.Services.AddSingleton<BikeData>();  // 👈 register your bikes here
         }
     }
 }

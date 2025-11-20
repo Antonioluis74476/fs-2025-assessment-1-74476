@@ -29,6 +29,7 @@ app.AddWeatherEndPoints();
 app.AddRootEndPoints();
 app.AddBookEndPoints();
 app.AddCourseEndPoints();
+app.AddBikeEndPoints();
 
 app.Run();
 
