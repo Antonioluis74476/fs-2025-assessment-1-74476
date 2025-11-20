@@ -1,0 +1,82 @@
+[
+    {
+        "id": 1,
+        "isbn": "978-0-123456-47-2",
+        "title": "The Silent Forest",
+        "author": "Elena Moore",
+        "publication_date": "2020-04-15",
+        "genre": "Mystery"
+    },
+    {
+        "id": 2,
+        "isbn": "978-1-86197-876-9",
+        "title": "Echoes of Tomorrow",
+        "author": "Daniel Reaves",
+        "publication_date": "2018-09-22",
+        "genre": "Science Fiction"
+    },
+    {
+        "id": 3,
+        "isbn": "978-0-553-21311-7",
+        "title": "Hearts in Ashes",
+        "author": "Maria Gonzales",
+        "publication_date": "2021-02-10",
+        "genre": "Romance"
+    },
+    {
+        "id": 4,
+        "isbn": "978-0-7432-7356-5",
+        "title": "Beneath the Crimson Sky",
+        "author": "Luca Ferraro",
+        "publication_date": "2019-11-05",
+        "genre": "Historical Fiction"
+    },
+    {
+        "id": 5,
+        "isbn": "978-0-06-112008-4",
+        "title": "Whispers in the Code",
+        "author": "Tara Bennett",
+        "publication_date": "2022-06-30",
+        "genre": "Thriller"
+    },
+    {
+        "id": 6,
+        "isbn": "978-1-250-12345-6",
+        "title": "Fragments of a Dream",
+        "author": "Omar Patel",
+        "publication_date": "2023-01-12",
+        "genre": "Drama"
+    },
+    {
+        "id": 7,
+        "isbn": "978-0-316-76948-0",
+        "title": "Legends of the Dusk",
+        "author": "Avery Chen",
+        "publication_date": "2017-08-18",
+        "genre": "Fantasy"
+    },
+    {
+        "id": 8,
+        "isbn": "978-1-4028-9462-6",
+        "title": "The Last Equation",
+        "author": "Samuel King",
+        "publication_date": "2024-03-01",
+        "genre": "Science Fiction"
+    },
+    {
+        "id": 9,
+        "isbn": "978-0-14-118280-3",
+        "title": "Bitter Lemons",
+        "author": "Clara Yates",
+        "publication_date": "2020-07-09",
+        "genre": "Literary Fiction"
+    },
+    {
+        "id": 10,
+        "isbn": "978-1-9848-3657-9",
+        "title": "Windswept Isles",
+        "author": "Noah Tanaka",
+        "publication_date": "2016-12-14",
+        "genre": "Adventure"
+    }
+]
