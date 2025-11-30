@@ -2,6 +2,8 @@
 {
     public class StationSummary
     {
+        public int stationCount { get; set; }
+        public int totalAvailableStands { get; set; }
         public int totalStations { get; set; }
         public int totalBikeStands { get; set; }
         public int totalAvailableBikes { get; set; }

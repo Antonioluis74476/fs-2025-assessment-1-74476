@@ -131,10 +131,12 @@ namespace fs_2025_a_api_demo_002.Endpoints
         //                V2 PLACEHOLDERS
         // ============================================
 
-        //  later connect these to Cosmos.
-        // For now they just return 501 so Swagger and Postman show them.
+        // ============================================
+        //                V2: Cosmos DB
+        // ============================================
 
-        private static Task<IResult> GetStationsV2(
+        private static async Task<IResult> GetStationsV2(
+            [FromServices] CosmosBikeService cosmos,
             string? status,
             int? minBikes,
             string? q,
@@ -143,24 +145,57 @@ namespace fs_2025_a_api_demo_002.Endpoints
             int page = 1,
             int pageSize = 50)
         {
-            return Task.FromResult<IResult>(
-                Results.StatusCode(StatusCodes.Status501NotImplemented));
+            var (items, totalCount) =
+                await cosmos.GetStationsAsync(status, minBikes, q, sort, dir, page, pageSize);
+
+            var result = new
+            {
+                page,
+                pageSize,
+                totalCount,
+                items
+            };
+
+            return Results.Ok(result);
         }
 
-        private static Task<IResult> GetStationByNumberV2(int number) =>
-            Task.FromResult<IResult>(
-                Results.StatusCode(StatusCodes.Status501NotImplemented));
+        private static async Task<IResult> GetStationByNumberV2(
+            [FromServices] CosmosBikeService cosmos,
+            int number)
+        {
+            var station = await cosmos.GetByNumberAsync(number);
+            if (station is null)
+                return Results.NotFound();
 
-        private static Task<IResult> GetSummaryV2() =>
-            Task.FromResult<IResult>(
-                Results.StatusCode(StatusCodes.Status501NotImplemented));
+            return Results.Ok(station);
+        }
 
-        private static Task<IResult> CreateStationV2(Bike _) =>
-            Task.FromResult<IResult>(
-                Results.StatusCode(StatusCodes.Status501NotImplemented));
+        private static async Task<IResult> GetSummaryV2(
+            [FromServices] CosmosBikeService cosmos)
+        {
+            var summary = await cosmos.GetSummaryAsync();
+            return Results.Ok(summary);
+        }
 
-        private static Task<IResult> UpdateStationV2(int number, Bike _) =>
-            Task.FromResult<IResult>(
-                Results.StatusCode(StatusCodes.Status501NotImplemented));
+        private static async Task<IResult> CreateStationV2(
+            [FromServices] CosmosBikeService cosmos,
+            [FromBody] Bike newStation)
+        {
+            var created = await cosmos.CreateAsync(newStation);
+            return Results.Created($"/api/v2/stations/{created.number}", created);
+        }
+
+        private static async Task<IResult> UpdateStationV2(
+            [FromServices] CosmosBikeService cosmos,
+            int number,
+            [FromBody] Bike updated)
+        {
+            var result = await cosmos.UpdateAsync(number, updated);
+            if (result is null)
+                return Results.NotFound();
+
+            return Results.Ok(result);
+        }
+
     }
 }

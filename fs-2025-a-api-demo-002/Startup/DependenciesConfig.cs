@@ -17,6 +17,9 @@ namespace fs_2025_a_api_demo_002.Startup
 
             // NEW: background updater
             builder.Services.AddHostedService<BikeUpdateBackgroundService>();
+
+            builder.Services.AddSingleton<CosmosBikeService>();
+
         }
     }
 }
