@@ -8,6 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// for caching
+builder.Services.AddMemoryCache();
+
 builder.AddDependencies();
 
 var app = builder.Build();
