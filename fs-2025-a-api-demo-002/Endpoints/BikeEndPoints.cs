@@ -136,28 +136,48 @@ namespace fs_2025_a_api_demo_002.Endpoints
         // ============================================
 
         private static async Task<IResult> GetStationsV2(
-            [FromServices] CosmosBikeService cosmos,
-            string? status,
-            int? minBikes,
-            string? q,
-            string? sort,
-            string? dir,
-            int page = 1,
-            int pageSize = 50)
+      [FromServices] CosmosBikeService cosmos,
+      string? status,
+      int? minBikes,
+      string? q,
+      string? sort,
+      string? dir,
+      int page = 1,
+      int pageSize = 50)
         {
-            var (items, totalCount) =
-                await cosmos.GetStationsAsync(status, minBikes, q, sort, dir, page, pageSize);
-
-            var result = new
+            try
             {
-                page,
-                pageSize,
-                totalCount,
-                items
-            };
+                Console.WriteLine("V2: about to call Cosmos GetStationsAsync...");
 
-            return Results.Ok(result);
+                var (items, totalCount) =
+                    await cosmos.GetStationsAsync(status, minBikes, q, sort, dir, page, pageSize);
+
+                Console.WriteLine($"V2: Cosmos returned {totalCount} stations.");
+
+                var result = new
+                {
+                    page,
+                    pageSize,
+                    totalCount,
+                    items
+                };
+
+                return Results.Ok(result);
+            }
+            catch (Exception ex)
+            {
+                // Log to console so you can see it in VS / terminal
+                Console.WriteLine("V2: ERROR talking to Cosmos:");
+                Console.WriteLine(ex);
+
+                // Return a proper 500 with the error message
+                return Results.Problem(
+                    title: "Cosmos DB error in V2",
+                    detail: ex.Message,
+                    statusCode: 500);
+            }
         }
+
 
         private static async Task<IResult> GetStationByNumberV2(
             [FromServices] CosmosBikeService cosmos,
