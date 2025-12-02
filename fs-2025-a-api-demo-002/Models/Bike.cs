@@ -4,6 +4,8 @@ namespace fs_2025_a_api_demo_002.Models
 {
     public class Bike
     {
+        // NEW — Cosmos DB requires an 'id' field
+        public string id { get; set; } = Guid.NewGuid().ToString();
         public int number { get; set; }
         public string contract_name { get; set; } = "";
         public string name { get; set; } = "";
