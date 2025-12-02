@@ -7,6 +7,9 @@ namespace fs_2025_a_api_demo_002.Data
     {
         public List<Bike> Stations { get; private set; } = new();
 
+        // ==========================================================
+        // 1) DEFAULT CONSTRUCTOR — USED BY THE REAL APPLICATION
+        // ==========================================================
         public BikeData()
         {
             var options = new JsonSerializerOptions
@@ -17,8 +20,15 @@ namespace fs_2025_a_api_demo_002.Data
             string filePath = Path.Combine(AppContext.BaseDirectory, "Data", "BikeData.json");
             var jsonData = File.ReadAllText(filePath);
 
-            //  List<Bikes> – must match the Bike model
             Stations = JsonSerializer.Deserialize<List<Bike>>(jsonData, options) ?? new();
+        }
+
+        // ==========================================================
+        // 2) TEST-ONLY CONSTRUCTOR — USED BY UNIT TESTS
+        // ==========================================================
+        public BikeData(List<Bike> seedStations)
+        {
+            Stations = seedStations ?? new List<Bike>();
         }
     }
 }
