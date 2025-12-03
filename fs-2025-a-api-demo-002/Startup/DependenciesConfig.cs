@@ -20,6 +20,8 @@ namespace fs_2025_a_api_demo_002.Startup
 
             builder.Services.AddSingleton<CosmosBikeService>();
 
+            builder.Services.AddSingleton<BikeCosmosImporter>();
+
         }
     }
 }

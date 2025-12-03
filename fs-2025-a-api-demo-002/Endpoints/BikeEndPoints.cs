@@ -19,7 +19,7 @@ namespace fs_2025_a_api_demo_002.Endpoints
             v1.MapPost("", CreateStationV1);
             v1.MapPut("/{number:int}", UpdateStationV1);
 
-            // ========== V2: Cosmos DB (placeholder for now) ==========
+            // ========== V2: Cosmos DB ==========
 
             var v2 = app.MapGroup("/api/v2/stations");
 
@@ -28,6 +28,10 @@ namespace fs_2025_a_api_demo_002.Endpoints
             v2.MapGet("/summary", GetSummaryV2);
             v2.MapPost("", CreateStationV2);
             v2.MapPut("/{number:int}", UpdateStationV2);
+
+            // DEV-ONLY helper to import from dublinbike.json into Cosmos
+            // POST /api/v2/stations/dev/import-from-file
+            v2.MapPost("/dev/import-from-file", ImportFromFileV2);
         }
 
         // ============================================
@@ -128,22 +132,18 @@ namespace fs_2025_a_api_demo_002.Endpoints
         }
 
         // ============================================
-        //                V2 PLACEHOLDERS
-        // ============================================
-
-        // ============================================
         //                V2: Cosmos DB
         // ============================================
 
         private static async Task<IResult> GetStationsV2(
-      [FromServices] CosmosBikeService cosmos,
-      string? status,
-      int? minBikes,
-      string? q,
-      string? sort,
-      string? dir,
-      int page = 1,
-      int pageSize = 50)
+            [FromServices] CosmosBikeService cosmos,
+            string? status,
+            int? minBikes,
+            string? q,
+            string? sort,
+            string? dir,
+            int page = 1,
+            int pageSize = 50)
         {
             try
             {
@@ -166,18 +166,15 @@ namespace fs_2025_a_api_demo_002.Endpoints
             }
             catch (Exception ex)
             {
-                // Log to console so you can see it in VS / terminal
                 Console.WriteLine("V2: ERROR talking to Cosmos:");
                 Console.WriteLine(ex);
 
-                // Return a proper 500 with the error message
                 return Results.Problem(
                     title: "Cosmos DB error in V2",
                     detail: ex.Message,
                     statusCode: 500);
             }
         }
-
 
         private static async Task<IResult> GetStationByNumberV2(
             [FromServices] CosmosBikeService cosmos,
@@ -215,6 +212,43 @@ namespace fs_2025_a_api_demo_002.Endpoints
                 return Results.NotFound();
 
             return Results.Ok(result);
+        }
+
+        // ============================================
+        //      V2 DEV IMPORT: seed Cosmos from JSON
+        // ============================================
+
+        private static async Task<IResult> ImportFromFileV2(
+            [FromServices] BikeCosmosImporter importer)
+        {
+            try
+            {
+                var (imported, total) = await importer.ImportFromFileAsync();
+
+                return Results.Ok(new
+                {
+                    message = "Import completed",
+                    imported,
+                    totalInFile = total
+                });
+            }
+            catch (FileNotFoundException ex)
+            {
+                return Results.Problem(
+                    title: "Import file not found",
+                    detail: ex.Message,
+                    statusCode: 500);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("V2: ERROR during import:");
+                Console.WriteLine(ex);
+
+                return Results.Problem(
+                    title: "Import failed",
+                    detail: ex.Message,
+                    statusCode: 500);
+            }
         }
 
     }
