@@ -1,0 +1,106 @@
+﻿<div class="card mb-3">
+    <div class="card-body">
+        <h2 class="h5">Filters</h2>
+
+        <div class="row g-3">
+            <div class="col-md-5">
+                <label for="search" class="form-label">Search (name or address)</label>
+                <input id="search"
+                       class="form-control"
+                       value="@localSearchText"
+                       @oninput="HandleSearchChanged" />
+            </div>
+
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select id="status"
+                        class="form-select"
+                        value="@localStatusFilter"
+                        @onchange="HandleStatusChanged">
+                    <option value="All">All</option>
+                    <option value="Open">Open</option>
+                    <option value="Closed">Closed</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="minBikes" class="form-label">Minimum bikes</label>
+                <input id="minBikes"
+                       type="number"
+                       class="form-control"
+                       value="@MinBikesDisplay"
+                       @onchange="HandleMinBikesChanged" />
+            </div>
+
+            <div class="col-md-1 d-flex align-items-end">
+                <button class="btn btn-outline-secondary w-100"
+                        @onclick="ClearClicked">
+                    Clear
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string SearchText { get; set; } = string.Empty;
+    [Parameter] public string StatusFilter { get; set; } = "All";
+    [Parameter] public int? MinAvailableBikes { get; set; }
+
+    [Parameter] public EventCallback<(string search, string status, int? minBikes)> OnFiltersChanged { get; set; }
+    [Parameter] public EventCallback OnClearFilters { get; set; }
+
+    private string localSearchText = string.Empty;
+    private string localStatusFilter = "All";
+    private int? localMinAvailableBikes;
+
+    private string MinBikesDisplay => localMinAvailableBikes?.ToString() ?? string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        localSearchText = SearchText;
+        localStatusFilter = StatusFilter;
+        localMinAvailableBikes = MinAvailableBikes;
+    }
+
+    private async Task HandleSearchChanged(ChangeEventArgs e)
+    {
+        localSearchText = e.Value?.ToString() ?? string.Empty;
+        await NotifyChanged();
+    }
+
+    private async Task HandleStatusChanged(ChangeEventArgs e)
+    {
+        localStatusFilter = e.Value?.ToString() ?? "All";
+        await NotifyChanged();
+    }
+
+    private async Task HandleMinBikesChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            localMinAvailableBikes = value;
+        }
+        else
+        {
+            localMinAvailableBikes = null;
+        }
+
+        await NotifyChanged();
+    }
+
+    private async Task NotifyChanged()
+    {
+        await OnFiltersChanged.InvokeAsync((localSearchText, localStatusFilter, localMinAvailableBikes));
+    }
+
+    private async Task ClearClicked()
+    {
+        localSearchText = string.Empty;
+        localStatusFilter = "All";
+        localMinAvailableBikes = null;
+
+        await OnClearFilters.InvokeAsync();
+        await NotifyChanged();
+    }
+}

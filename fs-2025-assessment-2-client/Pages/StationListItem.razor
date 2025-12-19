@@ -1,0 +1,35 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+
+<tr class="@RowClass"
+    tabindex="0"
+    @onclick="() => OnSelected.InvokeAsync(Station.Number)"
+    @onkeypress="OnKeyPress"
+    aria-selected="@IsSelected">
+    <td>@Station.Name</td>
+    <td>@Station.Address</td>
+    <td>
+        <span class="@StatusBadgeClass">@Station.Status</span>
+    </td>
+    <td>@Station.AvailableBikes / @Station.BikeStands</td>
+</tr>
+
+@code {
+    [Parameter] public StationDto Station { get; set; } = default!;
+    [Parameter] public bool IsSelected { get; set; }
+    [Parameter] public EventCallback<int> OnSelected { get; set; }
+
+    private string RowClass => IsSelected ? "table-primary" : string.Empty;
+
+    private string StatusBadgeClass =>
+        string.Equals(Station.Status, "OPEN", StringComparison.OrdinalIgnoreCase)
+            ? "badge bg-success"
+            : "badge bg-danger";
+
+    private async Task OnKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            await OnSelected.InvokeAsync(Station.Number);
+        }
+    }
+}

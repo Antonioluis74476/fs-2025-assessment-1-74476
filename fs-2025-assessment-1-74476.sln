@@ -5,7 +5,9 @@ VisualStudioVersion = 17.14.36511.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fs-2025-assessment-1-74476", "fs-2025-a-api-demo-002\fs-2025-assessment-1-74476.csproj", "{4A326228-9395-47ED-9925-CDE28E4D34A5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fs_2025_a_api_demo_002.Tests", "fs_2025_a_api_demo_002.Tests\fs_2025_a_api_demo_002.Tests.csproj", "{777D1DC2-3193-4DA5-B344-CC113435A50D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fs_2025_a_api_demo_002.Tests", "fs_2025_a_api_demo_002.Tests\fs_2025_a_api_demo_002.Tests.csproj", "{777D1DC2-3193-4DA5-B344-CC113435A50D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fs-2025-assessment-2-client", "fs-2025-assessment-2-client\fs-2025-assessment-2-client.csproj", "{424832FA-818E-4360-8260-85560084C553}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{777D1DC2-3193-4DA5-B344-CC113435A50D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{777D1DC2-3193-4DA5-B344-CC113435A50D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{777D1DC2-3193-4DA5-B344-CC113435A50D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{424832FA-818E-4360-8260-85560084C553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{424832FA-818E-4360-8260-85560084C553}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{424832FA-818E-4360-8260-85560084C553}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{424832FA-818E-4360-8260-85560084C553}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
