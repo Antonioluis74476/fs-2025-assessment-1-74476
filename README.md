@@ -222,6 +222,89 @@ JSON-based V1 with caching
 Cosmos DB–based V2 with full read/write support
 
 Development import utility
+fs-2025-assessment-2-74476
+Dublin Bikes Client Application (Blazor Server)
+
+This project is a Blazor Server application that consumes the V2 Dublin Bikes API created in Assessment 1.
+The client connects to the Cosmos DB–backed API and provides a full interface for browsing, filtering, and managing station data.
+
+The UI loads station data from the API, supports search filters, provides paging, and allows creating, updating, and deleting stations.
+
+Project Structure
+
+Pages
+
+Stations.razor – Main page that loads the data and contains all components.
+
+Components
+
+StationFilters.razor – Search box, status filter, and minimum-bikes filter.
+
+StationList.razor – Visual list or table of stations.
+
+StationListItem.razor – One station row with click selection.
+
+StationDetail.razor – Detail panel showing station info and a form for editing or creating stations.
+
+Services
+
+StationsApiClient.cs – Wrapper around HttpClient for calling /api/v2/stations and handling all CRUD operations.
+
+Features
+
+Loads all stations from the API on startup.
+
+Search filter (name or address).
+
+Status filter (Open, Closed, All).
+
+Minimum bikes filter.
+
+Client-side paging.
+
+Station selection and detail view.
+
+Create, update, and delete operations through the V2 API.
+
+Integrated Google Maps link for station coordinates.
+
+API Integration
+
+The client reads the API base URL from appsettings.json:
+
+{
+  "ApiBaseUrl": "https://localhost:7259/"
+}
+
+
+HttpClient is registered in Program.cs so all components can call the API through the StationsApiClient service.
+
+How to Run
+
+Start Docker Desktop.
+
+Start the Cosmos DB Emulator container:
+
+docker start cosmos-emulator
+
+
+Run both projects in the solution:
+
+The Web API (Assessment 1).
+
+The Blazor client (Assessment 2).
+
+Open the client in the browser:
+
+https://localhost:7017/stations
+
+
+The station list will load and the UI will be fully functional.
+
+Summary
+
+Assessment 2 delivers a working Blazor interface connected to the V2 Dublin Bikes API.
+It implements filtering, paging, station details, and full CRUD operations using the same data stored in the Cosmos DB emulator.
 
 Comprehensive unit testing suite
 
