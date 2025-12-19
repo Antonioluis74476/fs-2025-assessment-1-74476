@@ -60,7 +60,15 @@ else
 
                 <div class="mb-2">
                     <label class="form-label">Number</label>
-                    <InputNumber class="form-control" @bind-Value="editModel.Number" />
+                    <InputNumber class="form-control"
+                                 @bind-Value="editModel.Number"
+                                 disabled="@(!IsNew)" />
+                    @if (!IsNew)
+                    {
+                        <small class="form-text text-muted">
+                            Number is the station identifier and cannot be changed for existing stations.
+                        </small>
+                    }
                 </div>
 
                 <div class="mb-2">
@@ -208,7 +216,14 @@ else
             }
             else
             {
-                await ApiClient.UpdateStationAsync(editModel.Number, editModel);
+                if (Station is null)
+                {
+                    Message = "No station selected to update.";
+                    return;
+                }
+
+                // Use the original station number as the key for update
+                await ApiClient.UpdateStationAsync(Station.Number, editModel);
                 Message = "Station updated.";
                 await OnStationUpdated.InvokeAsync(editModel);
             }
