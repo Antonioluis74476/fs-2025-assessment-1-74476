@@ -1,0 +1,224 @@
+﻿@page "/stations"
+@inject StationsApiClient ApiClient
+
+<h1>Dublin Bikes Stations</h1>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="alert alert-danger">@ErrorMessage</div>
+}
+
+@if (IsLoading)
+{
+    <p>Loading stations...</p>
+}
+else if (FilteredStations.Count == 0)
+{
+    <p>No stations match your filters.</p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-7">
+            <StationFilters SearchText="@SearchText"
+                            StatusFilter="@StatusFilter"
+                            MinAvailableBikes="@MinAvailableBikes"
+                            OnFiltersChanged="HandleFiltersChanged"
+                            OnClearFilters="ClearFilters" />
+
+            <StationList Stations="@PagedStations"
+                         SelectedNumber="@SelectedStationNumber"
+                         OnStationSelected="HandleStationSelected" />
+
+            <div class="mt-3 d-flex justify-content-between">
+                <button class="btn btn-outline-secondary"
+                        @onclick="PreviousPage"
+                        disabled="@(!CanGoPrevious)">
+                    Previous
+                </button>
+
+                <span>Page @CurrentPage of @TotalPages</span>
+
+                <button class="btn btn-outline-secondary"
+                        @onclick="NextPage"
+                        disabled="@(!CanGoNext)">
+                    Next
+                </button>
+            </div>
+        </div>
+
+        <div class="col-md-5 mt-4 mt-md-0">
+            <StationDetail Station="SelectedStation"
+                           OnStationUpdated="HandleStationUpdated"
+                           OnStationDeleted="HandleStationDeleted"
+                           OnStationCreated="HandleStationCreated" />
+        </div>
+    </div>
+}
+
+@code {
+    private List<StationDto> AllStations = new();
+    private List<StationDto> FilteredStations = new();
+
+    private bool IsLoading = true;
+    private string? ErrorMessage;
+
+    // Filters
+    public string SearchText { get; set; } = string.Empty;
+    public string StatusFilter { get; set; } = "All"; // All, Open, Closed
+    public int? MinAvailableBikes { get; set; }
+
+    // Paging
+    private int PageSize = 10;
+    private int CurrentPage = 1;
+
+    private IEnumerable<StationDto> PagedStations =>
+        FilteredStations
+            .Skip((CurrentPage - 1) * PageSize)
+            .Take(PageSize);
+
+    private int TotalPages =>
+        (int)Math.Ceiling((double)Math.Max(1, FilteredStations.Count) / PageSize);
+
+    private bool CanGoPrevious => CurrentPage > 1;
+    private bool CanGoNext => CurrentPage < TotalPages;
+
+    // Selection
+    public int? SelectedStationNumber { get; set; }
+    public StationDto? SelectedStation =>
+        SelectedStationNumber.HasValue
+            ? FilteredStations.FirstOrDefault(s => s.Number == SelectedStationNumber.Value)
+            : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            ErrorMessage = null;
+
+            AllStations = await ApiClient.GetStationsAsync();
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            // 🔍 Show the real error while we debug
+            ErrorMessage = $"Failed to load stations: {ex.Message}";
+            Console.Error.WriteLine(ex); // logs full stack trace to Output window
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        IEnumerable<StationDto> query = AllStations;
+
+        // text search in name + address
+        if (!string.IsNullOrWhiteSpace(SearchText))
+        {
+            var term = SearchText.Trim().ToLowerInvariant();
+            query = query.Where(s =>
+                (s.Name ?? string.Empty).ToLowerInvariant().Contains(term) ||
+                (s.Address ?? string.Empty).ToLowerInvariant().Contains(term));
+        }
+
+        // status filter
+        if (StatusFilter == "Open")
+        {
+            query = query.Where(s => string.Equals(s.Status, "OPEN", StringComparison.OrdinalIgnoreCase));
+        }
+        else if (StatusFilter == "Closed")
+        {
+            query = query.Where(s => string.Equals(s.Status, "CLOSED", StringComparison.OrdinalIgnoreCase));
+        }
+
+        // min bikes
+        if (MinAvailableBikes.HasValue)
+        {
+            query = query.Where(s => s.AvailableBikes >= MinAvailableBikes.Value);
+        }
+
+        // default sort by name
+        query = query.OrderBy(s => s.Name);
+
+        FilteredStations = query.ToList();
+
+        // reset paging
+        CurrentPage = 1;
+
+        // auto-select first station
+        if (FilteredStations.Any())
+        {
+            SelectedStationNumber ??= FilteredStations.First().Number;
+        }
+        else
+        {
+            SelectedStationNumber = null;
+        }
+
+        StateHasChanged();
+    }
+
+    private void HandleFiltersChanged((string search, string status, int? minBikes) filters)
+    {
+        SearchText = filters.search;
+        StatusFilter = filters.status;
+        MinAvailableBikes = filters.minBikes;
+        ApplyFilters();
+    }
+
+    private void ClearFilters()
+    {
+        SearchText = string.Empty;
+        StatusFilter = "All";
+        MinAvailableBikes = null;
+        ApplyFilters();
+    }
+
+    private void HandleStationSelected(int number)
+    {
+        SelectedStationNumber = number;
+    }
+
+    private async Task HandleStationCreated(StationDto station)
+    {
+        AllStations = await ApiClient.GetStationsAsync();
+        ApplyFilters();
+        SelectedStationNumber = station.Number;
+    }
+
+    private async Task HandleStationUpdated(StationDto station)
+    {
+        AllStations = await ApiClient.GetStationsAsync();
+        ApplyFilters();
+        SelectedStationNumber = station.Number;
+    }
+
+    private async Task HandleStationDeleted(int number)
+    {
+        AllStations = await ApiClient.GetStationsAsync();
+        ApplyFilters();
+
+        if (FilteredStations.Any())
+        {
+            SelectedStationNumber = FilteredStations.First().Number;
+        }
+        else
+        {
+            SelectedStationNumber = null;
+        }
+    }
+
+    private void NextPage()
+    {
+        if (CanGoNext) CurrentPage++;
+    }
+
+    private void PreviousPage()
+    {
+        if (CanGoPrevious) CurrentPage--;
+    }
+}

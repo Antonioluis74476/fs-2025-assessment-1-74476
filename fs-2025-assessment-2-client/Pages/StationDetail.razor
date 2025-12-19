@@ -1,0 +1,252 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@inject StationsApiClient ApiClient
+
+@if (Station is null && !IsNew)
+{
+    <div class="card">
+        <div class="card-body">
+            <h2 class="h5">Station details</h2>
+            <p>Select a station from the list or click "New" to create one.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h2 class="h5">@TitleText</h2>
+
+            @if (!IsNew)
+            {
+                <p class="text-muted">@Station?.Address</p>
+
+                <p>
+                    <strong>Status:</strong>
+                    <span class="@StatusBadgeClass">@Station?.Status</span>
+                </p>
+
+                <p>
+                    <strong>Bikes:</strong> @Station?.AvailableBikes<br />
+                    <strong>Total stands:</strong> @Station?.BikeStands<br />
+                    <strong>Free stands:</strong> @Station?.AvailableBikeStands
+                </p>
+
+                <p>
+                    <strong>Last update:</strong>
+                    @LastUpdateDisplay
+                </p>
+
+                <p>
+                    <strong>Location:</strong>
+                    @Station?.Latitude, @Station?.Longitude
+                    @if (Station?.Latitude != 0 && Station?.Longitude != 0)
+                    {
+                        <br />
+                        <a target="_blank"
+                           href="@($"https://www.google.com/maps?q={Station.Latitude},{Station.Longitude}")">
+                            View on map
+                        </a>
+                    }
+                </p>
+
+                <hr />
+            }
+
+            <h3 class="h6">@FormTitle</h3>
+
+            <EditForm Model="@editModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-2">
+                    <label class="form-label">Number</label>
+                    <InputNumber class="form-control" @bind-Value="editModel.Number" />
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Name</label>
+                    <InputText class="form-control" @bind-Value="editModel.Name" />
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Address</label>
+                    <InputText class="form-control" @bind-Value="editModel.Address" />
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Status</label>
+                    <InputSelect class="form-select" @bind-Value="editModel.Status">
+                        <option value="OPEN">OPEN</option>
+                        <option value="CLOSED">CLOSED</option>
+                    </InputSelect>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Total stands</label>
+                    <InputNumber class="form-control" @bind-Value="editModel.BikeStands" />
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Available bikes</label>
+                    <InputNumber class="form-control" @bind-Value="editModel.AvailableBikes" />
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Available bike stands</label>
+                    <InputNumber class="form-control" @bind-Value="editModel.AvailableBikeStands" />
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Latitude</label>
+                    <InputNumber class="form-control" @bind-Value="editModel.Position!.Lat" />
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Longitude</label>
+                    <InputNumber class="form-control" @bind-Value="editModel.Position!.Lng" />
+                </div>
+
+                <div class="mt-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        Save
+                    </button>
+
+                    <button type="button" class="btn btn-outline-secondary" @onclick="StartNew">
+                        New
+                    </button>
+
+                    <button type="button" class="btn btn-danger" @onclick="DeleteCurrent" disabled="@IsNew">
+                        Delete
+                    </button>
+                </div>
+            </EditForm>
+
+            @if (!string.IsNullOrEmpty(Message))
+            {
+                <p class="mt-2">@Message</p>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public StationDto? Station { get; set; }
+    [Parameter] public EventCallback<StationDto> OnStationUpdated { get; set; }
+    [Parameter] public EventCallback<StationDto> OnStationCreated { get; set; }
+    [Parameter] public EventCallback<int> OnStationDeleted { get; set; }
+
+    private StationDto editModel = new();
+    private string? Message;
+    private bool IsNew = false;
+
+    private string TitleText => IsNew ? "New Station" : Station?.Name ?? "Station details";
+    private string FormTitle => IsNew ? "Create station" : "Edit station";
+
+    private string StatusBadgeClass =>
+        string.Equals(Station?.Status, "OPEN", StringComparison.OrdinalIgnoreCase)
+            ? "badge bg-success"
+            : "badge bg-danger";
+
+    private string LastUpdateDisplay
+        => Station is null || Station.LastUpdateRaw == 0
+            ? "Unknown"
+            : DateTimeOffset.FromUnixTimeMilliseconds(Station.LastUpdateRaw)
+                .ToLocalTime()
+                .ToString("g");
+
+    protected override void OnParametersSet()
+    {
+        if (Station != null && !IsNew)
+        {
+            // copy current station to edit model
+            editModel = new StationDto
+                {
+                    Id = Station.Id,
+                    Number = Station.Number,
+                    ContractName = Station.ContractName,
+                    Name = Station.Name,
+                    Address = Station.Address,
+                    Status = Station.Status,
+                    BikeStands = Station.BikeStands,
+                    AvailableBikes = Station.AvailableBikes,
+                    AvailableBikeStands = Station.AvailableBikeStands,
+                    Position = Station.Position is null
+                        ? new PositionDto()
+                        : new PositionDto { Lat = Station.Position.Lat, Lng = Station.Position.Lng },
+                    LastUpdateRaw = Station.LastUpdateRaw
+                };
+        }
+        else if (!IsNew)
+        {
+            editModel = new StationDto
+                {
+                    Position = new PositionDto()
+                };
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            Message = null;
+
+            if (editModel.Position == null)
+            {
+                editModel.Position = new PositionDto();
+            }
+
+            if (IsNew)
+            {
+                var created = await ApiClient.CreateStationAsync(editModel);
+                if (created != null)
+                {
+                    Message = "Station created.";
+                    IsNew = false;
+                    await OnStationCreated.InvokeAsync(created);
+                }
+            }
+            else
+            {
+                await ApiClient.UpdateStationAsync(editModel.Number, editModel);
+                Message = "Station updated.";
+                await OnStationUpdated.InvokeAsync(editModel);
+            }
+        }
+        catch (Exception ex)
+        {
+            Message = "Error saving station.";
+            Console.Error.WriteLine(ex);
+        }
+    }
+
+    private void StartNew()
+    {
+        IsNew = true;
+        Station = null;
+        editModel = new StationDto
+            {
+                ContractName = "dublin",
+                Position = new PositionDto()
+            };
+        Message = null;
+    }
+
+    private async Task DeleteCurrent()
+    {
+        if (Station is null) return;
+
+        try
+        {
+            Message = null;
+            await ApiClient.DeleteStationAsync(Station.Number);
+            Message = "Station deleted.";
+            await OnStationDeleted.InvokeAsync(Station.Number);
+        }
+        catch (Exception ex)
+        {
+            Message = "Error deleting station.";
+            Console.Error.WriteLine(ex);
+        }
+    }
+}

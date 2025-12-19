@@ -1,0 +1,24 @@
+﻿<table class="table table-hover" aria-label="Dublin Bikes station list">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Address</th>
+            <th scope="col">Status</th>
+            <th scope="col">Bikes / Stands</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var station in Stations)
+        {
+            <StationListItem Station="station"
+                             IsSelected="station.Number == SelectedNumber"
+                             OnSelected="OnStationSelected" />
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter] public IEnumerable<StationDto> Stations { get; set; } = Enumerable.Empty<StationDto>();
+    [Parameter] public int? SelectedNumber { get; set; }
+    [Parameter] public EventCallback<int> OnStationSelected { get; set; }
+}
